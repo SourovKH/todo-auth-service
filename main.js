@@ -1,9 +1,17 @@
+const dotenv = require("dotenv");
 const createApp = require("./src/app");
+const setupDb = require("./src/config/db-config");
+
+const injectDependencies = (app) => {
+  const dbCollection = setupDb(app);
+};
 
 const main = () => {
-  const app = createApp();
+  dotenv.config();
   const PORT = process.env.PORT || 8002;
-  
+  const app = createApp();
+  injectDependencies(app);
+
   app.listen(PORT, () => console.log(`App is listening of port ${PORT}`));
 };
 

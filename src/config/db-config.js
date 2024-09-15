@@ -1,32 +1,59 @@
 const { MongoClient } = require("mongodb");
 
-async function setupDb(app) {
-  const url = process.env.DB_URI;
-  const client = new MongoClient(url);
+class DbConfig {
+  #uri;
+  #dbName;
+  #client;
+  #db;
+  constructor(uri, dbName) {
+    this.#uri = uri;
+    this.#dbName = dbName;
+    this.#client = new MongoClient(this.#uri, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    this.#db = null;
+  }
 
-  try {
-    await client.connect();
-    console.log("Database successfully connected");
+  async connect() {
+    try {
+      await this.#client.connect();
+      console.log("Connected to MongoDB");
+      this.#db = this.#client.db(this.#dbName);
+    } catch (error) {
+      console.error("Error connecting to MongoDB:", error);
+    }
+  }
 
-    const database = client.db("auth");
-    const dbCollection = database.collection("users");
-    const userData = {
-      name: "sample name",
-      password: "sample password",
-      createdAt: new Date(),
-    };
+  async insertDocument(collectionName, document) {
+    try {
+      const collection = this.#db.collection(collectionName);
+      const result = await collection.insertOne(document);
+      console.log("Document inserted:", result.insertedId);
+      return result.insertedId;
+    } catch (error) {
+      console.error("Error inserting document:", error);
+    }
+  }
 
-    const result = await dbCollection.insertOne(userData);
-    console.log(`User inserted with _id: ${result.insertedId}`);
+  async findDocuments(collectionName, query = {}) {
+    try {
+      const collection = this.#db.collection(collectionName);
+      const documents = await collection.find(query).toArray();
+      return documents;
+    } catch (error) {
+      console.error("Error retrieving documents:", error);
+    }
+  }
 
-    dbCollection
-      .findOne({ _id: result.insertedId })
-      .then((res) => console.log(res));
-
-    return dbCollection
-  } catch (err) {
-    console.error(err);
+  async close() {
+    try {
+      await this.#client.close();
+      console.log("Connection to MongoDB closed");
+    } catch (error) {
+      console.error("Error closing connection to MongoDB:", error);
+    }
   }
 }
 
-module.exports = setupDb;
+module.exports = DbConfig;

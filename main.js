@@ -1,10 +1,7 @@
 const dotenv = require("dotenv");
 const createApp = require("./src/app");
-const setupDb = require("./src/config/db-config");
 
-const injectDependencies = (app) => {
-  const dbCollection = setupDb(app);
-};
+const injectDependencies = (app) => {};
 
 const main = () => {
   dotenv.config();

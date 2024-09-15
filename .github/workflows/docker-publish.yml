@@ -25,4 +25,4 @@ jobs:
       uses: docker/build-push-action@v5
       with:
         push: true
-        tags: skh02/auth-service:latest
+        tags: skh02/todo-auth-service:latest
